@@ -31,7 +31,6 @@ const getClientById = async (clientId) => {
 const createClient = async (reqBody) => {
 	const { pool } = db.createConnection();
 	const { name, date_of_birth, address, contact } = reqBody;
-	console.log("reqBody", reqBody);
 	try {
 		const _sql = {
 			name: "create-client",
