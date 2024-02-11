@@ -8,7 +8,6 @@ const getAllClients = async () => {
 		return data.rows;
 	} catch (error) {
 		throw error;
-	} finally {
 	}
 };
 
@@ -24,7 +23,6 @@ const getClientById = async (clientId) => {
 		return data.rows;
 	} catch (error) {
 		throw error;
-	} finally {
 	}
 };
 
@@ -41,7 +39,6 @@ const createClient = async (reqBody) => {
 		return data.rows[0].id;
 	} catch (error) {
 		throw error;
-	} finally {
 	}
 };
 
@@ -55,11 +52,10 @@ const updateClient = async (id, reqBody) => {
 			text: `update client set name=$1,date_of_birth=$2,address=$3,contact=$4  where id=$5`,
 			values: [name, date_of_birth, address, contact, id],
 		};
-		const data = await pool.query(_sql);
-		return data.rows[0].id;
+		await pool.query(_sql);
+		return "updated";
 	} catch (error) {
 		throw error;
-	} finally {
 	}
 };
 
@@ -75,7 +71,6 @@ const deleteClient = async (clientId) => {
 		return data.rows;
 	} catch (error) {
 		throw error;
-	} finally {
 	}
 };
 

@@ -3,9 +3,12 @@ const client = require("../db/client");
 const isClientRecordExist = async (req, res, next) => {
 	try {
 		const clientData = await client.getClientById(req.body.clientId);
-		if (clientData && clientData.length) next();
-		return res.json({ message: "No record found" });
-	} catch (error) {}
+		console.log(clientData, "data");
+		if (!clientData.length) return next();
+		else return res.json({ message: "Policy already exists!!" });
+	} catch (error) {
+		return error;
+	}
 };
 
 const validations = {
