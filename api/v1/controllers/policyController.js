@@ -35,6 +35,18 @@ router
 			return res.status(400).json(error);
 		}
 	})
+	.put(async (req, res) => {
+		try {
+			const updatePolicyData = Object.assign({}, req.body);
+			const updatePolicy = await policyService.updatePolicy(
+				req.params.id,
+				updatePolicyData
+			);
+			return res.status(200).json(updatePolicy);
+		} catch (error) {
+			return res.status(400).json(error);
+		}
+	})
 	.delete(async (req, res) => {
 		try {
 			const deletePolicy = await policyService.deletePolicy(req.params.id);
@@ -43,16 +55,5 @@ router
 			return res.status(400).json(error);
 		}
 	});
-
-router.route("/update/:id").put(async (req, res) => {
-	try {
-		const updatePolicyData = Object.assign({}, req.body);
-		const updatePolicy = await policyService.updatePolicy(
-			req.params.id,
-			updatePolicyData
-		);
-		return res.status(200).json(updatePolicy);
-	} catch (error) {}
-});
 
 module.exports = router;

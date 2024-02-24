@@ -8,7 +8,6 @@ router
 	.get(async (req, res) => {
 		try {
 			const data = await clientService.getClients();
-			console.log(data, "data");
 			return res.status(200).json(data);
 		} catch (error) {
 			return res.json(error);
@@ -16,7 +15,6 @@ router
 	})
 	.post(async (req, res) => {
 		try {
-			console.log(req.body, "body");
 			const data = await clientService.createClient(req.body);
 			return res.status(200).json(data);
 		} catch (error) {

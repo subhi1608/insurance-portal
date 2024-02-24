@@ -60,15 +60,27 @@ const updateClient = async (id, reqBody) => {
 };
 
 const deleteClient = async (clientId) => {
-	const { pool } = db.createConnection();
+	const { query } = db.createConnection();
 	try {
-		const _sql = {
-			name: "delete-client",
-			text: `delete from client where id = $1`,
+		let _sql = {
+			name: "get-insurance-policy",
+			text: `select id from insurance_policy where client_id=$1`,
 			values: [clientId],
+			rowMode: "array",
 		};
-		const data = await pool.query(_sql);
-		return data.rows;
+		let resp = await query(_sql);
+
+		let claimsArr = resp?.rows && resp?.rows?.map((item) => item[0]);
+		_sqltext = `delete from insurance_claim where insurance_policy_id in (${claimsArr})`;
+		await query(_sqltext);
+
+		_sqltext = `delete from insurance_policy where client_id=$1`;
+		await pool.query(_sqltext, clientId);
+
+		_sqltext = `delete from client where id = $1`;
+		await pool.query(_sqltext, clientId);
+
+		return "deleted";
 	} catch (error) {
 		throw error;
 	}
