@@ -82,7 +82,6 @@ const policy = {
 	createPolicy,
 	updatePolicy,
 	deletePolicy,
-	updatePolicy,
 };
 
 module.exports = policy;

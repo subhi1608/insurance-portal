@@ -13,7 +13,7 @@ router
 			return res.status(400).json(error);
 		}
 	})
-	.post(validations.reqBodyValidations, async (req, res, next) => {
+	.post((eq,res,next)=>validations.reqBodyValidations(eq,res,next,"claim"), async (req, res, next) => {
 		try {
 			const reqBody = Object.assign({}, req.body);
 			const data = await PolicyClaimService.createNewClaim(reqBody);

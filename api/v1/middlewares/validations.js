@@ -1,24 +1,20 @@
 const client = require("../db/client");
 const policyClaim = require("../db/policyclaim");
+const CONSTANTS = require("../constants");
 const isClientRecordExist = async (req, res, next) => {
 	try {
 		const clientData = await client.getClientById(req.body.clientId);
 		if (!clientData.length) return next();
-		else return res.json({ message: "Policy already exists!!" });
+		else return res.json({ message: "Client revord not found!!" });
 	} catch (error) {
 		return error;
 	}
 };
 
-const reqBodyValidations = async (req, res, next) => {
+const reqBodyValidations = async (req, res, next,_key) => {
 	try {
 		let errorMsg = "";
-		const keys = {
-			insurance_policy_id: "string",
-			description: "string",
-			claim_status: "string",
-			claim_date: "string",
-		};
+		const keys = CONSTANTS[_key];
 		const reqBody = req.body;
 		Object.keys(reqBody)?.forEach((item) => {
 			if (

@@ -3,6 +3,7 @@
 const express = require("express");
 const router = express.Router();
 const clientService = require("../Services/clientService.js");
+const validations = require("../middlewares/validations.js")
 router
 	.route("/")
 	.get(async (req, res) => {
@@ -13,10 +14,10 @@ router
 			return res.json(error);
 		}
 	})
-	.post(async (req, res) => {
+	.post((req,res,next)=>validations.reqBodyValidations(req,res,next,"client"),async (req, res) => {
 		try {
+			return res.status(200).json("saved");
 			const data = await clientService.createClient(req.body);
-			return res.status(200).json(data);
 		} catch (error) {
 			return res.json(error);
 		}
@@ -33,7 +34,7 @@ router
 			return res.json(error);
 		}
 	})
-	.put(async (req, res) => {
+	.put(validations.isClientRecordExist,async (req, res) => {
 		try {
 			const clientId = parseInt(req.params.id);
 			const clientBody = req.body;
