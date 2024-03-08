@@ -1,10 +1,10 @@
 const db = require("../db/index.js");
 
 const getAllClients = async () => {
-	const { pool } = db.createConnection();
+	const { query } = db.createConnection();
 	try {
 		const _sql = `select * from client`;
-		const data = await pool.query(_sql);
+		const data = await query(_sql);
 		return data.rows;
 	} catch (error) {
 		throw error;
@@ -12,14 +12,14 @@ const getAllClients = async () => {
 };
 
 const getClientById = async (clientId) => {
-	const { pool } = db.createConnection();
+	const { query } = db.createConnection();
 	try {
 		const _sql = {
 			name: "get-client",
 			text: `select * from client where id = $1`,
 			values: [clientId],
 		};
-		const data = await pool.query(_sql);
+		const data = await query(_sql);
 		return data.rows;
 	} catch (error) {
 		throw error;
@@ -27,7 +27,7 @@ const getClientById = async (clientId) => {
 };
 
 const createClient = async (reqBody) => {
-	const { pool } = db.createConnection();
+	const { query } = db.createConnection();
 	const { name, date_of_birth, address, contact } = reqBody;
 	try {
 		const _sql = {
@@ -35,7 +35,7 @@ const createClient = async (reqBody) => {
 			text: `insert into client(name,date_of_birth,address,contact) values ($1,$2,$3,$4) returning *`,
 			values: [name, date_of_birth, address, contact],
 		};
-		const data = await pool.query(_sql);
+		const data = await query(_sql);
 		return data.rows[0].id;
 	} catch (error) {
 		throw error;
@@ -43,16 +43,15 @@ const createClient = async (reqBody) => {
 };
 
 const updateClient = async (id, reqBody) => {
-	const { pool } = db.createConnection();
+	const { query } = db.createConnection();
 	const { name, date_of_birth, address, contact } = reqBody;
-	console.log("reqBody", reqBody, id);
 	try {
 		const _sql = {
 			name: "update-client",
 			text: `update client set name=$1,date_of_birth=$2,address=$3,contact=$4  where id=$5`,
 			values: [name, date_of_birth, address, contact, id],
 		};
-		await pool.query(_sql);
+		await query(_sql);
 		return "updated";
 	} catch (error) {
 		throw error;
@@ -75,10 +74,10 @@ const deleteClient = async (clientId) => {
 		await query(_sqltext);
 
 		_sqltext = `delete from insurance_policy where client_id=$1`;
-		await pool.query(_sqltext, clientId);
+		await query(_sqltext, clientId);
 
 		_sqltext = `delete from client where id = $1`;
-		await pool.query(_sqltext, clientId);
+		await query(_sqltext, clientId);
 
 		return "deleted";
 	} catch (error) {
@@ -86,12 +85,44 @@ const deleteClient = async (clientId) => {
 	}
 };
 
+const createUser = async (reqBody) => {
+	const { query } = db.createConnection();
+	const { email, password } = reqBody;
+	try {
+		const _sql = {
+			name: "create-user",
+			text: `insert into users(email,password) values ($1,$2) returning *`,
+			values: [email, password],
+		};
+		const data = await query(_sql);
+		return data.rows[0].id;
+	} catch (error) {
+		throw error;
+	}
+};
+
+const getUserByEmail = async (email, password) => {
+	const { query } = db.createConnection();
+	try {
+		const _sql = {
+			name: "get-user",
+			text: `select * from users where email = $1 and password=$2`,
+			values: [email, password],
+		};
+		const data = await query(_sql);
+		return data.rows[0];
+	} catch (error) {
+		throw error;
+	}
+};
 const client = {
 	getAllClients,
 	getClientById,
 	createClient,
 	updateClient,
 	deleteClient,
+	createUser,
+	getUserByEmail,
 };
 
 module.exports = client;

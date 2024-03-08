@@ -1,4 +1,5 @@
 const client = require("../db/client.js");
+const jwt = require("jsonwebtoken");
 
 const getClients = async () => {
 	try {
@@ -43,11 +44,32 @@ const deleteClient = async (id) => {
 	}
 };
 
+const createUser = async (data) => {
+	try {
+		const userData = await client.createUser(data);
+		const token = jwt.sign({ id: userData }, "mysecret");
+		return { token };
+	} catch (error) {
+		return error;
+	}
+};
+
+const loginUser = async (id) => {
+	try {
+		const token = jwt.sign({ id: id }, "mysecret");
+		return { token };
+	} catch (error) {
+		return error;
+	}
+};
+
 const clientService = {
 	getClients,
 	getClientById,
 	createClient,
 	updateClient,
 	deleteClient,
+	createUser,
+	loginUser,
 };
 module.exports = clientService;

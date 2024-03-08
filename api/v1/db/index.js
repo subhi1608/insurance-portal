@@ -14,7 +14,6 @@ const db = {
 		// return { pool };
 		return {
 			query: (sql, args) => {
-				console.log("here", sql, args);
 				return util.promisify(pool.query).call(pool, sql, args);
 			},
 			close: () => {
