@@ -8,9 +8,19 @@ const express = require("express");
 
 const v1 = express.Router();
 
-v1.use("/clients", utils.isAuthenticated, clientController);
-v1.use("/policies", policyController);
-v1.use("/claims", policyClaimController);
+v1.use("/clients", utils.isAuthenticated, utils.isUserLogged, clientController);
+v1.use(
+	"/policies",
+	utils.isAuthenticated,
+	utils.isUserLogged,
+	policyController
+);
+v1.use(
+	"/claims",
+	utils.isAuthenticated,
+	utils.isUserLogged,
+	policyClaimController
+);
 v1.use("/auth", authController);
 
 module.exports = v1;

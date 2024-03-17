@@ -35,7 +35,7 @@ router
 			return res.status(400).json(error);
 		}
 	})
-	.put(async (req, res) => {
+	.put(validations.isPolicyExist, async (req, res) => {
 		try {
 			const updatePolicyData = Object.assign({}, req.body);
 			const updatePolicy = await policyService.updatePolicy(
