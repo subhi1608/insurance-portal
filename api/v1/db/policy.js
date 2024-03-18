@@ -1,7 +1,7 @@
 const db = require("../db/index.js");
 
 const getPolicyById = async (id) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const _sql = {
 			name: "get-client-by-id",
@@ -16,7 +16,7 @@ const getPolicyById = async (id) => {
 };
 
 const getAllPolicies = async () => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const _sql = `select p.*,c.* from insurance_policy p join client as c on p.client_id = c.id`;
 		const data = await query(_sql);
@@ -27,7 +27,7 @@ const getAllPolicies = async () => {
 };
 
 const createPolicy = async (reqBody) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const { client_id, type, coverage_amount, premium, start_date, end_date } =
 			reqBody;
@@ -45,7 +45,7 @@ const createPolicy = async (reqBody) => {
 };
 
 const updatePolicy = async (id, data) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const { type, coverage_amount, premium, start_date, end_date } = data;
 		const _sql = {
@@ -54,7 +54,7 @@ const updatePolicy = async (id, data) => {
 			end_date=$5  where id=$6`,
 			values: [type, coverage_amount, premium, start_date, end_date, id],
 		};
-		const data = await query(_sql);
+		await query(_sql);
 		return "updated";
 	} catch (error) {
 		console.log(error, "err");
@@ -63,7 +63,7 @@ const updatePolicy = async (id, data) => {
 };
 
 const deletePolicy = async (id) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		let _sql = {
 			name: "delete-claim",

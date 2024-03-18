@@ -1,7 +1,7 @@
 const db = require("../db/index.js");
 
 const getAllClaims = async () => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const _sql = `select ic.*,c.*,ip.* from insurance_claim ic join insurance_policy as ip on ic.insurance_policy_id = ip.id join client as c on ip.client_id=c.id;`;
 		const data = await query(_sql);
@@ -12,7 +12,7 @@ const getAllClaims = async () => {
 };
 
 const getSingleClaim = async (id) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const _sql = {
 			name: "get-claim-by-id",
@@ -27,7 +27,7 @@ const getSingleClaim = async (id) => {
 };
 
 const createNewClaim = async (reqBody) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const { insurance_policy_id, description, claim_status, claim_date } =
 			reqBody;
@@ -44,7 +44,7 @@ const createNewClaim = async (reqBody) => {
 };
 
 const updateClaim = async (id, data) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	const { insurance_policy_id, description, claim_status, claim_date } = data;
 	try {
 		const _sql = {
@@ -60,7 +60,7 @@ const updateClaim = async (id, data) => {
 };
 
 const deleteClaim = async (id) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const _sql = {
 			name: "delete-policy-claim",

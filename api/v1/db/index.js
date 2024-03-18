@@ -1,17 +1,17 @@
 const util = require("util");
-const mysql = require("mysql2");
 const Pool = require("pg").Pool;
+require("dotenv").config();
 
 const db = {
-	createConnection: () => {
-		const pool = new Pool({
-			user: "postgres",
-			host: "localhost",
-			database: "insurance_management",
-			password: "root",
-			port: 5432,
-		});
-		// return { pool };
+	createConnection: async () => {
+		const options = {
+			user: process.env.DB_USER,
+			host: process.env.DB_HOST,
+			database: process.env.DB,
+			password: process.env.DB_PASSWORD,
+			port: process.env.PORT,
+		};
+		const pool = new Pool(options);
 		return {
 			query: (sql, args) => {
 				return util.promisify(pool.query).call(pool, sql, args);

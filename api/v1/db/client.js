@@ -1,7 +1,7 @@
 const db = require("../db/index.js");
 
 const getAllClients = async () => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const _sql = `select * from client`;
 		const data = await query(_sql);
@@ -12,7 +12,7 @@ const getAllClients = async () => {
 };
 
 const getClientById = async (clientId) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const _sql = {
 			name: "get-client",
@@ -27,7 +27,7 @@ const getClientById = async (clientId) => {
 };
 
 const createClient = async (reqBody) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const { name, date_of_birth, address, contact } = reqBody;
 		const _sql = {
@@ -43,7 +43,7 @@ const createClient = async (reqBody) => {
 };
 
 const updateClient = async (id, reqBody) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const { name, date_of_birth, address, contact } = reqBody;
 		const _sql = {
@@ -59,7 +59,7 @@ const updateClient = async (id, reqBody) => {
 };
 
 const deleteClient = async (clientId) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		let _sql = {
 			name: "get-insurance-policy",
@@ -96,7 +96,7 @@ const deleteClient = async (clientId) => {
 };
 
 const createUser = async (reqBody) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const { email, password } = reqBody;
 		const sql = {
@@ -119,7 +119,7 @@ const createUser = async (reqBody) => {
 };
 
 const getUserByEmail = async (email, password) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const _sql = {
 			name: "get-user",
@@ -134,7 +134,7 @@ const getUserByEmail = async (email, password) => {
 };
 
 const getUserStatus = async (id) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const _sql = {
 			name: "get-user-status",
@@ -149,7 +149,7 @@ const getUserStatus = async (id) => {
 };
 
 const updateLoginStatus = async (id) => {
-	const { query } = db.createConnection();
+	const { query } = await db.createConnection();
 	try {
 		const _sql = {
 			name: "get-user-status",
