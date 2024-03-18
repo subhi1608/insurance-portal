@@ -13,16 +13,19 @@ router
 			return res.status(400).json(error);
 		}
 	})
-	.post((eq,res,next)=>validations.reqBodyValidations(eq,res,next,"claim"), async (req, res, next) => {
-		try {
-			const reqBody = Object.assign({}, req.body);
-			const data = await PolicyClaimService.createNewClaim(reqBody);
-			return res.status(200).json({ message: "Created", data: data });
-		} catch (error) {
-			console.log(error, "error controller");
-			return res.status(400).json({ message: "something went wrong" });
+	.post(
+		(req, res, next) => validations.reqBodyValidations(req, res, next, "claim"),
+		async (req, res, next) => {
+			try {
+				const reqBody = Object.assign({}, req.body);
+				const data = await PolicyClaimService.createNewClaim(reqBody);
+				return res.status(200).json({ message: "Created", data: data });
+			} catch (error) {
+				console.log(error, "error controller");
+				return res.status(400).json({ message: "something went wrong" });
+			}
 		}
-	});
+	);
 
 router
 	.route("/:id")

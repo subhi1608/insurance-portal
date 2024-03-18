@@ -1,10 +1,10 @@
 const db = require("../db/index.js");
 
 const getAllClaims = async () => {
-	const { pool } = db.createConnection();
+	const { query } = db.createConnection();
 	try {
 		const _sql = `select ic.*,c.*,ip.* from insurance_claim ic join insurance_policy as ip on ic.insurance_policy_id = ip.id join client as c on ip.client_id=c.id;`;
-		const data = await pool.query(_sql);
+		const data = await query(_sql);
 		return data.rows;
 	} catch (error) {
 		throw error;
@@ -12,14 +12,14 @@ const getAllClaims = async () => {
 };
 
 const getSingleClaim = async (id) => {
-	const { pool } = db.createConnection();
+	const { query } = db.createConnection();
 	try {
 		const _sql = {
 			name: "get-claim-by-id",
 			text: "select ic.*,c.*,ip.* from insurance_claim ic join insurance_policy as ip on ic.insurance_policy_id = ip.id join client as c on ip.client_id=c.id where ic.id= $1",
 			values: [id],
 		};
-		const data = await pool.query(_sql);
+		const data = await query(_sql);
 		return data.rows;
 	} catch (error) {
 		throw error;
@@ -27,7 +27,7 @@ const getSingleClaim = async (id) => {
 };
 
 const createNewClaim = async (reqBody) => {
-	const { pool } = db.createConnection();
+	const { query } = db.createConnection();
 	try {
 		const { insurance_policy_id, description, claim_status, claim_date } =
 			reqBody;
@@ -36,7 +36,7 @@ const createNewClaim = async (reqBody) => {
 			text: `insert into insurance_claim(insurance_policy_id,description,claim_status,claim_date) values ($1,$2,$3,$4) returning *`,
 			values: [insurance_policy_id, description, claim_status, claim_date],
 		};
-		const data = await pool.query(_sql);
+		const data = await query(_sql);
 		return data.rows[0].id;
 	} catch (error) {
 		throw error;
@@ -44,7 +44,7 @@ const createNewClaim = async (reqBody) => {
 };
 
 const updateClaim = async (id, data) => {
-	const { pool } = db.createConnection();
+	const { query } = db.createConnection();
 	const { insurance_policy_id, description, claim_status, claim_date } = data;
 	try {
 		const _sql = {
@@ -52,7 +52,7 @@ const updateClaim = async (id, data) => {
 			text: `update insurance_claim set insurance_policy_id=$1, description=$2, claim_status=$3, claim_date=$4  where id=$5`,
 			values: [insurance_policy_id, description, claim_status, claim_date, id],
 		};
-		const data = await pool.query(_sql);
+		await query(_sql);
 		return "updated";
 	} catch (error) {
 		throw error;
@@ -60,14 +60,14 @@ const updateClaim = async (id, data) => {
 };
 
 const deleteClaim = async (id) => {
-	const { pool } = db.createConnection();
+	const { query } = db.createConnection();
 	try {
 		const _sql = {
 			name: "delete-policy-claim",
 			text: `delete from insurance_claim where id = $1`,
 			values: [id],
 		};
-		await pool.query(_sql);
+		await query(_sql);
 		return "deleted";
 	} catch (error) {
 		throw error;

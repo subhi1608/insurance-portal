@@ -28,8 +28,8 @@ const getClientById = async (clientId) => {
 
 const createClient = async (reqBody) => {
 	const { query } = db.createConnection();
-	const { name, date_of_birth, address, contact } = reqBody;
 	try {
+		const { name, date_of_birth, address, contact } = reqBody;
 		const _sql = {
 			name: "create-client",
 			text: `insert into client(name,date_of_birth,address,contact) values ($1,$2,$3,$4) returning *`,
@@ -44,8 +44,8 @@ const createClient = async (reqBody) => {
 
 const updateClient = async (id, reqBody) => {
 	const { query } = db.createConnection();
-	const { name, date_of_birth, address, contact } = reqBody;
 	try {
+		const { name, date_of_birth, address, contact } = reqBody;
 		const _sql = {
 			name: "update-client",
 			text: `update client set name=$1,date_of_birth=$2,address=$3,contact=$4  where id=$5`,
@@ -68,30 +68,37 @@ const deleteClient = async (clientId) => {
 			rowMode: "array",
 		};
 		let resp = await query(_sql);
-		console.log(resp, "resp");
 		let claimsArr = resp?.rows?.length && resp?.rows?.map((item) => item[0]);
 		if (claimsArr) {
 			_sqltext = `delete from insurance_claim where insurance_policy_id in (${claimsArr})`;
 			resp = await query(_sqltext);
-			console.log(resp, "resp 2", claimsArr);
 		}
-		_sqltext = `delete from insurance_policy where client_id=$1`;
-		resp = await query(_sqltext, clientId);
-		console.log(resp, "resp 3");
-		_sqltext = `delete from client where id = $1`;
-		resp = await query(_sqltext, clientId);
-		console.log(resp, "resp 4");
+
+		_sql = {
+			name: "delete-policy",
+			text: `delete from insurance_policy where client_id=$1`,
+			values: [clientId],
+		};
+
+		await query(_sql);
+
+		_sql = {
+			name: "delete-client",
+			text: `delete from client where id = $1`,
+			values: [clientId],
+		};
+		resp = await query(_sql);
+
 		return "deleted";
 	} catch (error) {
-		console.log(error, "eror");
 		throw error;
 	}
 };
 
 const createUser = async (reqBody) => {
 	const { query } = db.createConnection();
-	const { email, password } = reqBody;
 	try {
+		const { email, password } = reqBody;
 		const sql = {
 			name: "delete-user",
 			text: `delete from users where email=$1`,

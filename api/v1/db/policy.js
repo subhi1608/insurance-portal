@@ -46,8 +46,8 @@ const createPolicy = async (reqBody) => {
 
 const updatePolicy = async (id, data) => {
 	const { query } = db.createConnection();
-	const { type, coverage_amount, premium, start_date, end_date } = data;
 	try {
+		const { type, coverage_amount, premium, start_date, end_date } = data;
 		const _sql = {
 			name: "update-policy",
 			text: `update insurance_policy set type=$1,coverage_amount=$2,premium=$3,start_date=$4,
@@ -65,8 +65,16 @@ const updatePolicy = async (id, data) => {
 const deletePolicy = async (id) => {
 	const { query } = db.createConnection();
 	try {
-		const _sql = {
-			name: "delete-client",
+		let _sql = {
+			name: "delete-claim",
+			text: `delete from insurance_claim where insurance_policy_id = $1`,
+			values: [id],
+		};
+
+		await query(_sql);
+
+		_sql = {
+			name: "delete-policy",
 			text: `delete from insurance_policy where id = $1`,
 			values: [id],
 		};

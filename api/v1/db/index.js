@@ -14,20 +14,10 @@ const db = {
 		// return { pool };
 		return {
 			query: (sql, args) => {
-				console.log(sql, args, "args");
 				return util.promisify(pool.query).call(pool, sql, args);
 			},
 			close: () => {
 				return util.promisify(pool.end).call(pool);
-			},
-			beginTransaction: () => {
-				return util.promisify(pool.beginTransaction).call(pool);
-			},
-			commit: () => {
-				return util.promisify(connection.commit).call(connection);
-			},
-			rollback: () => {
-				return util.promisify(connection.rollback).call(connection);
 			},
 		};
 	},
