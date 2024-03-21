@@ -27,9 +27,9 @@ const utils = {
 				req.body.email,
 				req.body.password
 			);
-			if (isUserValid?.login_status)
-				return res.json({ message: "already logged in please sign out first" });
-			else if (isUserValid?.id) {
+			// if (isUserValid?.login_status)
+			// 	await clientService.logoutUser()
+			if (isUserValid?.id) {
 				req.userId = isUserValid.id;
 				return next();
 			} else return res.json({ message: "user record not found!!" });

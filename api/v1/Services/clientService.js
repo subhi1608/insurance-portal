@@ -50,7 +50,7 @@ const createUser = async (data) => {
 		const token = jwt.sign({ id: userData }, "mysecret", {
 			expiresIn: "1d",
 		});
-		await client.updateLoginStatus(userData);
+		await client.updateLoginStatus(userData, true);
 		return { token };
 	} catch (error) {
 		return error;
@@ -62,7 +62,16 @@ const loginUser = async (id) => {
 		const token = jwt.sign({ id: id }, "mysecret", {
 			expiresIn: "1d",
 		});
-		await client.updateLoginStatus(id);
+		await client.updateLoginStatus(id, true);
+		return { token };
+	} catch (error) {
+		return error;
+	}
+};
+
+const logoutUser = async (id) => {
+	try {
+		await client.updateLoginStatus(id, false);
 		return { token };
 	} catch (error) {
 		return error;
@@ -77,5 +86,6 @@ const clientService = {
 	deleteClient,
 	createUser,
 	loginUser,
+	logoutUser,
 };
 module.exports = clientService;

@@ -148,13 +148,13 @@ const getUserStatus = async (id) => {
 	}
 };
 
-const updateLoginStatus = async (id) => {
+const updateLoginStatus = async (id, value) => {
 	const { query } = await db.createConnection();
 	try {
 		const _sql = {
 			name: "get-user-status",
 			text: `update users set login_status=$1 where id=$2`,
-			values: [true, id],
+			values: [value, id],
 		};
 		await query(_sql);
 		return "done";
