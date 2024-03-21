@@ -1,6 +1,10 @@
+const path = require("path");
 const util = require("util");
 const Pool = require("pg").Pool;
-require("dotenv").config();
+
+require("dotenv").config({
+	path: path.resolve(process.cwd(), "example.env"),
+});
 
 const db = {
 	createConnection: async () => {
