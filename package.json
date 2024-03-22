@@ -2,8 +2,10 @@
 	"name": "nodejs-insurance",
 	"version": "0.0.0",
 	"private": true,
+	"main": "app.js",
 	"scripts": {
-		"start": "nodemon app.js"
+		"start": "node app.js",
+		"dev":"nodemon app.js"
 	},
 	"dependencies": {
 		"cookie-parser": "~1.4.4",

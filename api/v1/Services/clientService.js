@@ -47,7 +47,7 @@ const deleteClient = async (id) => {
 const createUser = async (data) => {
 	try {
 		const userData = await client.createUser(data);
-		const token = jwt.sign({ id: userData }, "mysecret", {
+		const token = jwt.sign({ id: userData }, process.env.TOKEN, {
 			expiresIn: "1d",
 		});
 		await client.updateLoginStatus(userData, true);
@@ -59,7 +59,7 @@ const createUser = async (data) => {
 
 const loginUser = async (id) => {
 	try {
-		const token = jwt.sign({ id: id }, "mysecret", {
+		const token = jwt.sign({ id: id }, process.env.TOKEN, {
 			expiresIn: "1d",
 		});
 		await client.updateLoginStatus(id, true);
