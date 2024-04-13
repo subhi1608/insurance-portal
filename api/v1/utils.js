@@ -43,7 +43,7 @@ const utils = {
 			if (token && token.startsWith("Bearer"))
 				token = token.slice(7, token.length);
 			if (token) {
-				jwt.verify(token, "mysecret", (err, data) => {
+				jwt.verify(token, process.env.TOKEN, (err, data) => {
 					if (err) {
 						return res.json({
 							success: false,
