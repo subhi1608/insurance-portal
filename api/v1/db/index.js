@@ -1,34 +1,29 @@
+const path = require("path");
 const util = require("util");
-const mysql = require("mysql2");
 const Pool = require("pg").Pool;
 
+require("dotenv").config({
+	path: path.resolve(process.cwd(), "example.env"),
+});
+
 const db = {
-	createConnection: () => {
-		const pool = new Pool({
-			user: "postgres",
-			host: "localhost",
-			database: "insurance_management",
-			password: "root",
-			port: 5432,
-		});
-		return { pool };
-		// return {
-		// 	query: () => {
-		// 		return util.promisify(connection.query).call(connection, sql, args);
-		// 	},
-		// 	close: () => {
-		// 		return util.promisify(connection.end).call(connection);
-		// 	},
-		// 	beginTransaction: () => {
-		// 		return util.promisify(connection.beginTransaction).call(connection);
-		// 	},
-		// 	commit: () => {
-		// 		return util.promisify(connection.commit).call(connection);
-		// 	},
-		// 	rollback: () => {
-		// 		return util.promisify(connection.rollback).call(connection);
-		// 	},
-		// };
+	createConnection: async () => {
+		const options = {
+			user: process.env.DB_USER,
+			host: process.env.DB_HOST,
+			database: process.env.DB,
+			password: process.env.DB_PASSWORD,
+			port: process.env.DB_PORT,
+		};
+		const pool = new Pool(options);
+		return {
+			query: (sql, args) => {
+				return util.promisify(pool.query).call(pool, sql, args);
+			},
+			close: () => {
+				return util.promisify(pool.end).call(pool);
+			},
+		};
 	},
 };
 
