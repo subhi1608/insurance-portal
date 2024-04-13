@@ -7,7 +7,7 @@ const logger = require("morgan");
 const api = require("./api/index");
 
 const app = express();
-const PORT = 8000;
+const PORT = process.env.APP_PORT || 8000;
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
