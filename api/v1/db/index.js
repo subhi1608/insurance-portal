@@ -14,6 +14,9 @@ const db = {
 			database: process.env.DB,
 			password: process.env.DB_PASSWORD,
 			port: process.env.DB_PORT,
+			ssl: {
+				require: true,
+			},
 		};
 		const pool = new Pool(options);
 		return {
