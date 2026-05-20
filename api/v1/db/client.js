@@ -118,13 +118,13 @@ const createUser = async (reqBody) => {
 	}
 };
 
-const getUserByEmail = async (email, password) => {
+const getUserByEmail = async (email) => {
 	const { query } = await db.createConnection();
 	try {
 		const _sql = {
-			name: "get-user",
-			text: `select * from users where email = $1 and password=$2`,
-			values: [email, password],
+			name: "get-user-by-email",
+			text: `select * from users where email = $1`,
+			values: [email],
 		};
 		const data = await query(_sql);
 		return data.rows[0];

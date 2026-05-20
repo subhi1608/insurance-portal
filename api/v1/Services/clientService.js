@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const client = require("../db/client.js");
 const jwt = require("jsonwebtoken");
 
@@ -44,35 +45,53 @@ const deleteClient = async (id) => {
 	}
 };
 
+const _signTokens = (userId) => {
+	const accessToken = jwt.sign({ id: userId }, process.env.TOKEN, { expiresIn: "15m" });
+	const refreshToken = jwt.sign({ id: userId }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+	return { accessToken, refreshToken };
+};
+
 const createUser = async (data) => {
 	try {
-		const userData = await client.createUser(data);
-		const token = jwt.sign({ id: userData }, process.env.TOKEN, {
-			expiresIn: "1d",
-		});
-		await client.updateLoginStatus(userData, true);
-		return { token };
+		const { email, password } = data;
+		const hashedPassword = await bcrypt.hash(password, 12);
+		const userId = await client.createUser({ email, password: hashedPassword });
+		const tokens = _signTokens(userId);
+		await client.updateLoginStatus(userId, true);
+		return tokens;
 	} catch (error) {
 		return error;
 	}
 };
 
-const loginUser = async (id) => {
+const loginUser = async (email, password) => {
 	try {
-		const token = jwt.sign({ id: id }, process.env.TOKEN, {
-			expiresIn: "1d",
-		});
-		await client.updateLoginStatus(id, true);
-		return { token };
+		const user = await client.getUserByEmail(email);
+		if (!user) return null;
+		const isMatch = await bcrypt.compare(password, user.password);
+		if (!isMatch) return null;
+		const tokens = _signTokens(user.id);
+		await client.updateLoginStatus(user.id, true);
+		return tokens;
 	} catch (error) {
 		return error;
+	}
+};
+
+const refreshAccessToken = async (refreshToken) => {
+	try {
+		const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+		const accessToken = jwt.sign({ id: decoded.id }, process.env.TOKEN, { expiresIn: "15m" });
+		return { accessToken };
+	} catch (error) {
+		return null;
 	}
 };
 
 const logoutUser = async (id) => {
 	try {
 		await client.updateLoginStatus(id, false);
-		return { token };
+		return { message: "Logged out successfully" };
 	} catch (error) {
 		return error;
 	}
@@ -86,6 +105,7 @@ const clientService = {
 	deleteClient,
 	createUser,
 	loginUser,
+	refreshAccessToken,
 	logoutUser,
 };
 module.exports = clientService;
