@@ -2,11 +2,13 @@
 	"name": "nodejs-insurance",
 	"version": "0.0.0",
 	"private": true,
-	"main": "app.js",
+	"main": "server.ts",
 	"scripts": {
-		"start": "node app.js",
-		"dev": "nodemon app.js",
-		"migrate": "node scripts/migrate.js"
+		"start": "tsx server.ts",
+		"dev": "tsx watch server.ts",
+		"typecheck": "tsc --noEmit",
+		"migrate": "tsx scripts/migrate.ts",
+		"test": "vitest run"
 	},
 	"dependencies": {
 		"bcrypt": "^6.0.0",
@@ -21,6 +23,19 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"nodemon": "^3.0.2"
+		"@types/bcrypt": "^6.0.0",
+		"@types/cookie-parser": "^1.4.10",
+		"@types/express": "^5.0.6",
+		"@types/http-errors": "^2.0.5",
+		"@types/jsonwebtoken": "^9.0.10",
+		"@types/morgan": "^1.9.10",
+		"@types/node": "^25.9.1",
+		"@types/pg": "^8.20.0",
+		"@types/supertest": "^7.2.0",
+		"nodemon": "^3.0.2",
+		"supertest": "^7.2.2",
+		"tsx": "^4.22.3",
+		"typescript": "^6.0.3",
+		"vitest": "^4.1.7"
 	}
 }
