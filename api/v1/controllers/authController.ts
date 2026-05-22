@@ -1,9 +1,18 @@
 import express, { Request, Response } from "express";
 import type { CookieOptions } from "express";
+import rateLimit from "express-rate-limit";
 import clientService from "../Services/clientService";
 import utils from "../utils";
 import { validate } from "../middlewares/validations";
 import { authSigninSchema, authLoginSchema } from "../schemas";
+
+const authRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { error: { code: "TOO_MANY_REQUESTS", message: "Too many requests, please try again later" } },
+});
 
 const router = express.Router();
 
@@ -20,7 +29,7 @@ const isTokenPair = (
 ): value is { accessToken: string; refreshToken: string } =>
   !!value && typeof value === "object" && "accessToken" in value;
 
-router.route("/signin").post(validate(authSigninSchema), async (req: Request, res: Response) => {
+router.route("/signin").post(authRateLimit, validate(authSigninSchema), async (req: Request, res: Response) => {
   try {
     const result = await clientService.createUser(req.body);
     if (!isTokenPair(result)) {
@@ -37,7 +46,7 @@ router.route("/signin").post(validate(authSigninSchema), async (req: Request, re
   }
 });
 
-router.route("/login").post(validate(authLoginSchema), async (req: Request, res: Response) => {
+router.route("/login").post(authRateLimit, validate(authLoginSchema), async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const result = await clientService.loginUser(email, password);

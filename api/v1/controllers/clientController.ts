@@ -9,8 +9,10 @@ router
   .route("/")
   .get(async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data = await clientService.getClients();
-      return res.status(200).json({ data });
+      const page = Math.max(1, Number(req.query.page) || 1);
+      const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+      const { rows, total } = await clientService.getClients(page, limit);
+      return res.status(200).json({ data: rows, meta: { page, limit, total } });
     } catch (error) {
       return next(error);
     }

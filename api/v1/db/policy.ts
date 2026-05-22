@@ -11,7 +11,7 @@ const getPolicyById = async (id: number): Promise<any[]> => {
 
 const getAllPolicies = async (page: number, limit: number, clientId?: number): Promise<PaginationResult<any>> => {
   const offset = (page - 1) * limit;
-  if (clientId) {
+  if (clientId !== undefined) {
     const [countResult, dataResult] = await Promise.all([
       db.query("SELECT COUNT(*) FROM insurance_policy WHERE client_id = $1", [clientId]),
       db.query(

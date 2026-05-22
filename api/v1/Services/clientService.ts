@@ -3,12 +3,8 @@ import jwt from "jsonwebtoken";
 import client from "../db/client";
 import type { ClientInput, TokenPair } from "../../../types";
 
-const getClients = async () => {
-  try {
-    return await client.getAllClients();
-  } catch (error) {
-    /* swallow — list endpoint returns undefined on failure */
-  }
+const getClients = async (page: number, limit: number) => {
+  return await client.getAllClients(page, limit);
 };
 
 const getClientById = async (clientId: number) => {

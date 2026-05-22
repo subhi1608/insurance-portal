@@ -3,7 +3,7 @@ import type { ClaimInput, PaginationResult } from "../../../types";
 
 const getAllClaims = async (page: number, limit: number, policyId?: number): Promise<PaginationResult<any>> => {
   const offset = (page - 1) * limit;
-  if (policyId) {
+  if (policyId !== undefined) {
     const [countResult, dataResult] = await Promise.all([
       db.query("SELECT COUNT(*) FROM insurance_claim WHERE insurance_policy_id = $1", [policyId]),
       db.query(

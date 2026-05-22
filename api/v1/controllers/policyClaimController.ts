@@ -11,7 +11,15 @@ router
     try {
       const page = Math.max(1, Number(req.query.page) || 1);
       const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
-      const policyId = req.query.policy_id ? Number(req.query.policy_id) : undefined;
+      const rawPolicyId = req.query.policy_id;
+      let policyId: number | undefined;
+      if (rawPolicyId !== undefined) {
+        const parsed = Number(rawPolicyId);
+        if (!Number.isInteger(parsed) || parsed <= 0) {
+          return res.status(400).json({ error: { code: "INVALID_PARAM", message: "policy_id must be a positive integer" } });
+        }
+        policyId = parsed;
+      }
       const { rows, total } = await policyClaimService.getAllClaims(page, limit, policyId);
       return res.status(200).json({ data: rows, meta: { page, limit, total } });
     } catch (error) {

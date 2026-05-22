@@ -1,9 +1,13 @@
 import db from "./index";
-import type { Client, ClientInput, User } from "../../../types";
+import type { Client, ClientInput, PaginationResult, User } from "../../../types";
 
-const getAllClients = async (): Promise<Client[]> => {
-  const data = await db.query("SELECT * FROM client");
-  return data.rows;
+const getAllClients = async (page: number, limit: number): Promise<PaginationResult<Client>> => {
+  const offset = (page - 1) * limit;
+  const [countResult, dataResult] = await Promise.all([
+    db.query("SELECT COUNT(*) FROM client"),
+    db.query("SELECT * FROM client ORDER BY id LIMIT $1 OFFSET $2", [limit, offset]),
+  ]);
+  return { rows: dataResult.rows, total: Number(countResult.rows[0].count) };
 };
 
 const getClientById = async (clientId: number): Promise<Client[]> => {
