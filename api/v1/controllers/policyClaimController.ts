@@ -9,8 +9,11 @@ router
   .route("/")
   .get(async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data = await policyClaimService.getAllClaims();
-      return res.status(200).json({ data });
+      const page = Math.max(1, Number(req.query.page) || 1);
+      const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+      const policyId = req.query.policy_id ? Number(req.query.policy_id) : undefined;
+      const { rows, total } = await policyClaimService.getAllClaims(page, limit, policyId);
+      return res.status(200).json({ data: rows, meta: { page, limit, total } });
     } catch (error) {
       return next(error);
     }

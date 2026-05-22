@@ -1,5 +1,5 @@
 import db from "./index";
-import type { PolicyInput } from "../../../types";
+import type { PaginationResult, PolicyInput } from "../../../types";
 
 const getPolicyById = async (id: number): Promise<any[]> => {
   const data = await db.query(
@@ -9,11 +9,26 @@ const getPolicyById = async (id: number): Promise<any[]> => {
   return data.rows;
 };
 
-const getAllPolicies = async (): Promise<any[]> => {
-  const data = await db.query(
-    "SELECT p.*, c.* FROM insurance_policy p JOIN client c ON p.client_id = c.id"
-  );
-  return data.rows;
+const getAllPolicies = async (page: number, limit: number, clientId?: number): Promise<PaginationResult<any>> => {
+  const offset = (page - 1) * limit;
+  if (clientId) {
+    const [countResult, dataResult] = await Promise.all([
+      db.query("SELECT COUNT(*) FROM insurance_policy WHERE client_id = $1", [clientId]),
+      db.query(
+        "SELECT * FROM insurance_policy WHERE client_id = $1 ORDER BY id LIMIT $2 OFFSET $3",
+        [clientId, limit, offset]
+      ),
+    ]);
+    return { rows: dataResult.rows, total: Number(countResult.rows[0].count) };
+  }
+  const [countResult, dataResult] = await Promise.all([
+    db.query("SELECT COUNT(*) FROM insurance_policy"),
+    db.query(
+      "SELECT p.*, c.* FROM insurance_policy p JOIN client c ON p.client_id = c.id ORDER BY p.id LIMIT $1 OFFSET $2",
+      [limit, offset]
+    ),
+  ]);
+  return { rows: dataResult.rows, total: Number(countResult.rows[0].count) };
 };
 
 const createPolicy = async (reqBody: PolicyInput): Promise<number> => {

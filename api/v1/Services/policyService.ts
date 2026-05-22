@@ -9,12 +9,8 @@ const createPolicy = async (data: PolicyInput) => {
   }
 };
 
-const getAllPolicies = async () => {
-  try {
-    return await policy.getAllPolicies();
-  } catch (error) {
-    return error;
-  }
+const getAllPolicies = async (page: number, limit: number, clientId?: number) => {
+  return await policy.getAllPolicies(page, limit, clientId);
 };
 
 const getSinglePolicyById = async (id: number) => {

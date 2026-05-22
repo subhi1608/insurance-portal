@@ -1,12 +1,8 @@
 import policyClaim from "../db/policyclaim";
 import type { ClaimInput } from "../../../types";
 
-const getAllClaims = async () => {
-  try {
-    return await policyClaim.getAllClaims();
-  } catch (error) {
-    return error;
-  }
+const getAllClaims = async (page: number, limit: number, policyId?: number) => {
+  return await policyClaim.getAllClaims(page, limit, policyId);
 };
 
 const getSingleClaim = async (id: number) => {

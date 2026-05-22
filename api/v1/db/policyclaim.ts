@@ -1,14 +1,30 @@
 import db from "./index";
-import type { ClaimInput } from "../../../types";
+import type { ClaimInput, PaginationResult } from "../../../types";
 
-const getAllClaims = async (): Promise<any[]> => {
-  const data = await db.query(
-    `SELECT ic.*, c.*, ip.*
-     FROM insurance_claim ic
-     JOIN insurance_policy ip ON ic.insurance_policy_id = ip.id
-     JOIN client c ON ip.client_id = c.id`
-  );
-  return data.rows;
+const getAllClaims = async (page: number, limit: number, policyId?: number): Promise<PaginationResult<any>> => {
+  const offset = (page - 1) * limit;
+  if (policyId) {
+    const [countResult, dataResult] = await Promise.all([
+      db.query("SELECT COUNT(*) FROM insurance_claim WHERE insurance_policy_id = $1", [policyId]),
+      db.query(
+        "SELECT * FROM insurance_claim WHERE insurance_policy_id = $1 ORDER BY id LIMIT $2 OFFSET $3",
+        [policyId, limit, offset]
+      ),
+    ]);
+    return { rows: dataResult.rows, total: Number(countResult.rows[0].count) };
+  }
+  const [countResult, dataResult] = await Promise.all([
+    db.query("SELECT COUNT(*) FROM insurance_claim"),
+    db.query(
+      `SELECT ic.*, c.*, ip.*
+       FROM insurance_claim ic
+       JOIN insurance_policy ip ON ic.insurance_policy_id = ip.id
+       JOIN client c ON ip.client_id = c.id
+       ORDER BY ic.id LIMIT $1 OFFSET $2`,
+      [limit, offset]
+    ),
+  ]);
+  return { rows: dataResult.rows, total: Number(countResult.rows[0].count) };
 };
 
 const getSingleClaim = async (id: number): Promise<any[]> => {
