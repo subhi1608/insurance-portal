@@ -1,30 +1,21 @@
-const path = require("path");
-const util = require("util");
-const Pool = require("pg").Pool;
+const { Pool } = require("pg");
 
-require("dotenv").config({
-	path: path.resolve(process.cwd(), "example.env"),
+const pool = new Pool({
+	user: process.env.DB_USER,
+	host: process.env.DB_HOST,
+	database: process.env.DB,
+	password: process.env.DB_PASSWORD,
+	port: parseInt(process.env.DB_PORT, 10),
+	max: 20,
+	idleTimeoutMillis: 30000,
+	connectionTimeoutMillis: 2000,
 });
 
-const db = {
-	createConnection: async () => {
-		const options = {
-			user: process.env.DB_USER,
-			host: process.env.DB_HOST,
-			database: process.env.DB,
-			password: process.env.DB_PASSWORD,
-			port: process.env.DB_PORT,
-		};
-		const pool = new Pool(options);
-		return {
-			query: (sql, args) => {
-				return util.promisify(pool.query).call(pool, sql, args);
-			},
-			close: () => {
-				return util.promisify(pool.end).call(pool);
-			},
-		};
-	},
+const query = (sql, args) => pool.query(sql, args);
+
+const checkHealth = async () => {
+	const client = await pool.connect();
+	client.release();
 };
 
-module.exports = db;
+module.exports = { query, checkHealth };

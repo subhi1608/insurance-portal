@@ -2,6 +2,8 @@
 const express = require("express");
 const clientService = require("../Services/clientService");
 const utils = require("../utils");
+const { validate } = require("../middlewares/validations");
+const { authSigninSchema, authLoginSchema } = require("../schemas");
 const router = express.Router();
 
 const REFRESH_COOKIE = "refreshToken";
@@ -12,7 +14,7 @@ const COOKIE_OPTIONS = {
 	maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
-router.route("/signin").post(async (req, res) => {
+router.route("/signin").post(validate(authSigninSchema), async (req, res) => {
 	try {
 		const result = await clientService.createUser(req.body);
 		if (!result || result instanceof Error) {
@@ -25,7 +27,7 @@ router.route("/signin").post(async (req, res) => {
 	}
 });
 
-router.route("/login").post(async (req, res) => {
+router.route("/login").post(validate(authLoginSchema), async (req, res) => {
 	try {
 		const { email, password } = req.body;
 		const result = await clientService.loginUser(email, password);

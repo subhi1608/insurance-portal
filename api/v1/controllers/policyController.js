@@ -3,56 +3,55 @@
 const express = require("express");
 const router = express.Router();
 const policyService = require("../Services/policyService");
-const validations = require("../middlewares/validations");
+const { validate, isClientRecordExist, isPolicyExist } = require("../middlewares/validations");
+const { createPolicySchema, updatePolicySchema } = require("../schemas");
 
 router
 	.route("/")
-	.get(async (req, res) => {
+	.get(async (req, res, next) => {
 		try {
-			const getAllPolicies = await policyService.getAllPolicies();
-			return res.status(200).json(getAllPolicies);
+			const data = await policyService.getAllPolicies();
+			return res.status(200).json({ data });
 		} catch (error) {
-			return res.status(400).json(error);
+			return next(error);
 		}
 	})
-	.post(validations.isClientRecordExist, async (req, res) => {
+	.post(isClientRecordExist, validate(createPolicySchema), async (req, res, next) => {
 		try {
-			const reqBody = req.body;
-			const clientData = await policyService.createPolicy(reqBody);
-			return res.status(200).json(clientData);
-		} catch (error) {}
+			const id = await policyService.createPolicy(req.body);
+			return res.status(201).json({ data: { id } });
+		} catch (error) {
+			return next(error);
+		}
 	});
 
 router
 	.route("/:id")
-	.get(async (req, res) => {
+	.get(async (req, res, next) => {
 		try {
-			const getSinglePolicy = await policyService.getSinglePolicyById(
-				req.params.id
-			);
-			return res.status(200).json(getSinglePolicy);
+			const rows = await policyService.getSinglePolicyById(req.params.id);
+			if (!rows || !rows.length) {
+				return res.status(404).json({ error: { code: "POLICY_NOT_FOUND", message: "Policy not found" } });
+			}
+			return res.status(200).json({ data: rows[0] });
 		} catch (error) {
-			return res.status(400).json(error);
+			return next(error);
 		}
 	})
-	.put(validations.isPolicyExist, async (req, res) => {
+	.put(isPolicyExist, validate(updatePolicySchema), async (req, res, next) => {
 		try {
-			const updatePolicyData = Object.assign({}, req.body);
-			const updatePolicy = await policyService.updatePolicy(
-				req.params.id,
-				updatePolicyData
-			);
-			return res.status(200).json(updatePolicy);
+			await policyService.updatePolicy(req.params.id, req.body);
+			return res.status(200).json({ data: { message: "updated" } });
 		} catch (error) {
-			return res.status(400).json(error);
+			return next(error);
 		}
 	})
-	.delete(async (req, res) => {
+	.delete(async (req, res, next) => {
 		try {
-			const deletePolicy = await policyService.deletePolicy(req.params.id);
-			return res.status(200).json(deletePolicy);
+			await policyService.deletePolicy(req.params.id);
+			return res.status(200).json({ data: { message: "deleted" } });
 		} catch (error) {
-			return res.status(400).json(error);
+			return next(error);
 		}
 	});
 
