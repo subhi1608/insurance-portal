@@ -3,58 +3,58 @@
 const express = require("express");
 const router = express.Router();
 const clientService = require("../Services/clientService.js");
-const validations = require("../middlewares/validations.js");
+const { validate, isClientRecordExist } = require("../middlewares/validations.js");
+const { clientSchema } = require("../schemas.js");
+
 router
 	.route("/")
-	.get(async (req, res) => {
+	.get(async (req, res, next) => {
 		try {
 			const data = await clientService.getClients();
-			return res.status(200).json(data);
+			return res.status(200).json({ data });
 		} catch (error) {
-			return res.json(error);
+			return next(error);
 		}
 	})
-	.post(
-		(req, res, next) =>
-			validations.reqBodyValidations(req, res, next, "client"),
-		async (req, res) => {
-			try {
-				const data = await clientService.createClient(req.body);
-				return res.status(200).json({ message: "saved" });
-			} catch (error) {
-				return res.json(error);
-			}
+	.post(validate(clientSchema), async (req, res, next) => {
+		try {
+			const id = await clientService.createClient(req.body);
+			return res.status(201).json({ data: { id } });
+		} catch (error) {
+			return next(error);
 		}
-	);
+	});
 
 router
 	.route("/:id")
-	.get(async (req, res) => {
+	.get(async (req, res, next) => {
 		try {
 			const clientId = parseInt(req.params.id);
-			const data = await clientService.getClientById(clientId);
-			return res.status(200).json(data);
+			const rows = await clientService.getClientById(clientId);
+			if (!rows || !rows.length) {
+				return res.status(404).json({ error: { code: "CLIENT_NOT_FOUND", message: "Client not found" } });
+			}
+			return res.status(200).json({ data: rows[0] });
 		} catch (error) {
-			return res.json(error);
+			return next(error);
 		}
 	})
-	.put(validations.isClientRecordExist, async (req, res) => {
+	.put(isClientRecordExist, validate(clientSchema), async (req, res, next) => {
 		try {
 			const clientId = parseInt(req.params.id);
-			const clientBody = req.body;
-			const data = await clientService.updateClient(clientId, clientBody);
-			return res.status(200).json(data);
+			await clientService.updateClient(clientId, req.body);
+			return res.status(200).json({ data: { message: "updated" } });
 		} catch (error) {
-			return res.json(error);
+			return next(error);
 		}
 	})
-	.delete(async (req, res) => {
+	.delete(async (req, res, next) => {
 		try {
 			const clientId = parseInt(req.params.id);
-			const data = await clientService.deleteClient(clientId);
-			return res.status(200).json(data);
+			await clientService.deleteClient(clientId);
+			return res.status(200).json({ data: { message: "deleted" } });
 		} catch (error) {
-			return res.json(error);
+			return next(error);
 		}
 	});
 

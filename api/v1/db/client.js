@@ -1,169 +1,75 @@
 const db = require("../db/index.js");
 
 const getAllClients = async () => {
-	const { query } = await db.createConnection();
-	try {
-		const _sql = `select * from client`;
-		const data = await query(_sql);
-		return data.rows;
-	} catch (error) {
-		throw error;
-	}
+	const data = await db.query("SELECT * FROM client");
+	return data.rows;
 };
 
 const getClientById = async (clientId) => {
-	const { query } = await db.createConnection();
-	try {
-		const _sql = {
-			name: "get-client",
-			text: `select * from client where id = $1`,
-			values: [clientId],
-		};
-		const data = await query(_sql);
-		return data.rows;
-	} catch (error) {
-		throw error;
-	}
+	const data = await db.query("SELECT * FROM client WHERE id = $1", [clientId]);
+	return data.rows;
 };
 
 const createClient = async (reqBody) => {
-	const { query } = await db.createConnection();
-	try {
-		const { name, date_of_birth, address, contact } = reqBody;
-		const _sql = {
-			name: "create-client",
-			text: `insert into client(name,date_of_birth,address,contact) values ($1,$2,$3,$4) returning *`,
-			values: [name, date_of_birth, address, contact],
-		};
-		const data = await query(_sql);
-		return data.rows[0].id;
-	} catch (error) {
-		throw error;
-	}
+	const { name, date_of_birth, address, contact } = reqBody;
+	const data = await db.query(
+		"INSERT INTO client(name, date_of_birth, address, contact) VALUES ($1, $2, $3, $4) RETURNING id",
+		[name, date_of_birth, address, contact]
+	);
+	return data.rows[0].id;
 };
 
 const updateClient = async (id, reqBody) => {
-	const { query } = await db.createConnection();
-	try {
-		const { name, date_of_birth, address, contact } = reqBody;
-		const _sql = {
-			name: "update-client",
-			text: `update client set name=$1,date_of_birth=$2,address=$3,contact=$4  where id=$5`,
-			values: [name, date_of_birth, address, contact, id],
-		};
-		await query(_sql);
-		return "updated";
-	} catch (error) {
-		throw error;
-	}
+	const { name, date_of_birth, address, contact } = reqBody;
+	await db.query(
+		"UPDATE client SET name=$1, date_of_birth=$2, address=$3, contact=$4 WHERE id=$5",
+		[name, date_of_birth, address, contact, id]
+	);
 };
 
 const deleteClient = async (clientId) => {
-	const { query } = await db.createConnection();
-	try {
-		let _sql = {
-			name: "get-insurance-policy",
-			text: `select id from insurance_policy where client_id=$1`,
-			values: [clientId],
-			rowMode: "array",
-		};
-		let resp = await query(_sql);
-		let claimsArr = resp?.rows?.length && resp?.rows?.map((item) => item[0]);
-		if (claimsArr) {
-			_sqltext = `delete from insurance_claim where insurance_policy_id in (${claimsArr})`;
-			resp = await query(_sqltext);
-		}
+	const policyRows = await db.query(
+		"SELECT id FROM insurance_policy WHERE client_id=$1",
+		[clientId]
+	);
+	const policyIds = policyRows.rows.map((r) => r.id);
 
-		_sql = {
-			name: "delete-policy",
-			text: `delete from insurance_policy where client_id=$1`,
-			values: [clientId],
-		};
-
-		await query(_sql);
-
-		_sql = {
-			name: "delete-client",
-			text: `delete from client where id = $1`,
-			values: [clientId],
-		};
-		resp = await query(_sql);
-
-		return "deleted";
-	} catch (error) {
-		throw error;
+	if (policyIds.length) {
+		await db.query(
+			`DELETE FROM insurance_claim WHERE insurance_policy_id = ANY($1::int[])`,
+			[policyIds]
+		);
 	}
+
+	await db.query("DELETE FROM insurance_policy WHERE client_id=$1", [clientId]);
+	await db.query("DELETE FROM client WHERE id=$1", [clientId]);
 };
 
 const createUser = async (reqBody) => {
-	const { query } = await db.createConnection();
-	try {
-		const { email, password } = reqBody;
-		const sql = {
-			name: "delete-user",
-			text: `delete from users where email=$1`,
-			values: [email],
-		};
-		await query(sql);
-
-		const _sql = {
-			name: "create-user",
-			text: `insert into users(email,password) values ($1,$2) returning *`,
-			values: [email, password],
-		};
-		const data = await query(_sql);
-		return data.rows[0].id;
-	} catch (error) {
-		throw error;
-	}
+	const { email, password } = reqBody;
+	await db.query("DELETE FROM users WHERE email=$1", [email]);
+	const data = await db.query(
+		"INSERT INTO users(email, password) VALUES ($1, $2) RETURNING id",
+		[email, password]
+	);
+	return data.rows[0].id;
 };
 
 const getUserByEmail = async (email) => {
-	const { query } = await db.createConnection();
-	try {
-		const _sql = {
-			name: "get-user-by-email",
-			text: `select * from users where email = $1`,
-			values: [email],
-		};
-		const data = await query(_sql);
-		return data.rows[0];
-	} catch (error) {
-		throw error;
-	}
+	const data = await db.query("SELECT * FROM users WHERE email=$1", [email]);
+	return data.rows[0];
 };
 
 const getUserStatus = async (id) => {
-	const { query } = await db.createConnection();
-	try {
-		const _sql = {
-			name: "get-user-status",
-			text: `select login_status from users where id=$1`,
-			values: [id],
-		};
-		const data = await query(_sql);
-		return data.rows[0];
-	} catch (error) {
-		throw error;
-	}
+	const data = await db.query("SELECT login_status FROM users WHERE id=$1", [id]);
+	return data.rows[0];
 };
 
 const updateLoginStatus = async (id, value) => {
-	const { query } = await db.createConnection();
-	try {
-		const _sql = {
-			name: "get-user-status",
-			text: `update users set login_status=$1 where id=$2`,
-			values: [value, id],
-		};
-		await query(_sql);
-		return "done";
-	} catch (error) {
-		throw error;
-	}
+	await db.query("UPDATE users SET login_status=$1 WHERE id=$2", [value, id]);
 };
 
-const client = {
+module.exports = {
 	getAllClients,
 	getClientById,
 	createClient,
@@ -174,5 +80,3 @@ const client = {
 	getUserStatus,
 	updateLoginStatus,
 };
-
-module.exports = client;
