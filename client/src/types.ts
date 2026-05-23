@@ -1,0 +1,34 @@
+export interface Client {
+  id: number
+  name: string
+  date_of_birth: string
+  address: string
+  contact: string
+}
+
+export interface Policy {
+  id: number
+  client_id: number
+  type: string
+  coverage_amount: number
+  premium: number
+  start_date: string
+  end_date: string
+}
+
+export interface Claim {
+  id: number
+  insurance_policy_id: number
+  description: string
+  claim_status: string
+  claim_date: string
+}
+
+export type ClientInput = Omit<Client, 'id'>
+export type PolicyInput = Omit<Policy, 'id'>
+export type ClaimInput = Omit<Claim, 'id'>
+
+export interface PaginationResult<T> {
+  rows: T[]
+  total: number
+}

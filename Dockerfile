@@ -1,17 +1,20 @@
-FROM ubuntu
+# Stage 1: Build the React client
+FROM node:20-alpine AS client-builder
+WORKDIR /app/client
+COPY client/package*.json ./
+RUN npm ci
+COPY client/ ./
+RUN npm run build
 
-RUN apt-get update
-RUN apt-get install -y curl
-RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
-RUN apt-get upgrade -y
-RUN apt-get install -y nodejs
+# Stage 2: Production image
+FROM node:20-alpine
+WORKDIR /app/server
+COPY server/package*.json ./
+RUN npm ci --omit=dev
+COPY server/ ./
 
-COPY package.json package.json
-COPY package-lock.json package-lock.json
-COPY api api
-COPY example.env example.env
-COPY app.js app.js
+# Copy the built client
+COPY --from=client-builder /app/client/dist /app/client/dist
 
-RUN npm install
 EXPOSE 8000
-ENTRYPOINT [ "node","app.js" ]
+CMD ["npx", "tsx", "server.ts"]
