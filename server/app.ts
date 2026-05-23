@@ -19,7 +19,8 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? "")
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow all origins when ALLOWED_ORIGINS is not configured (dev fallback)
+      if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
@@ -32,7 +33,9 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
+
+// Serve built React client (production)
+app.use(express.static(path.join(__dirname, "../client/dist")));
 
 app.get("/health", async (req: Request, res: Response) => {
   try {
@@ -48,6 +51,13 @@ app.get("/health", async (req: Request, res: Response) => {
 });
 
 app.use("/api", api);
+
+// Catch-all: send React's index.html for any non-API route (supports client-side routing)
+app.get("*", (_req: Request, res: Response, next: NextFunction) => {
+  res.sendFile(path.join(__dirname, "../client/dist/index.html"), (err) => {
+    if (err) next(); // Falls through to 404 handler in development (no build yet)
+  });
+});
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   next(createError(404));
