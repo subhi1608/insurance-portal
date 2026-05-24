@@ -14,7 +14,7 @@ export const clientSchema = z.object({
   name: z.string().min(1, "Name is required"),
   date_of_birth: z.string().min(1, "Date of birth is required"),
   address: z.string().min(1, "Address is required"),
-  contact: z.string().min(1, "Contact is required"),
+  contact: z.string().min(10, "Contact is required"),
 });
 
 const _policyBase = z.object({

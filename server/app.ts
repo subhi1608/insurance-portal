@@ -5,9 +5,11 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
 import { AppError } from "./api/v1/errors";
 import db from "./api/v1/db/index";
 import api from "./api/index";
+import spec from "./openapi";
 
 const app = express();
 
@@ -50,6 +52,7 @@ app.get("/health", async (req: Request, res: Response) => {
   }
 });
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(spec));
 app.use("/api", api);
 
 // Catch-all: send React's index.html for any non-API route (supports client-side routing)
