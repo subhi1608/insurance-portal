@@ -1,6 +1,8 @@
 import express, { Request, Response } from "express";
 import type { CookieOptions } from "express";
 import rateLimit from "express-rate-limit";
+import { RedisStore } from "rate-limit-redis";
+import connection from "../../../queue/connection";
 import clientService from "../Services/clientService";
 import utils from "../utils";
 import { validate } from "../middlewares/validations";
@@ -12,6 +14,9 @@ const authRateLimit = rateLimit({
   standardHeaders: "draft-7",
   legacyHeaders: false,
   message: { error: { code: "TOO_MANY_REQUESTS", message: "Too many requests, please try again later" } },
+  store: new RedisStore({
+    sendCommand: (...args: string[]) => (connection as any).call(...args),
+  }),
 });
 
 const router = express.Router();

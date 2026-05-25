@@ -32,3 +32,9 @@ export interface PaginationResult<T> {
   rows: T[]
   total: number
 }
+
+export interface JobStatus {
+  status: 'waiting' | 'active' | 'completed' | 'failed' | 'unknown'
+  result?: { claimId: number }
+  failedReason?: string
+}

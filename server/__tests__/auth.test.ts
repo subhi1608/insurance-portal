@@ -3,6 +3,25 @@ import request from 'supertest';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import db from '../api/v1/db/index';
+
+// Mock Redis connection — prevents real ioredis connection in tests
+vi.mock('../queue/connection', () => ({
+  default: {
+    ping: vi.fn().mockResolvedValue('PONG'),
+    call: vi.fn().mockResolvedValue(null),
+  },
+}));
+
+// Mock rate-limit-redis RedisStore — prevents store init from calling Redis SCRIPT LOAD
+vi.mock('rate-limit-redis', () => ({
+  RedisStore: class {
+    async init() {}
+    async increment() { return { totalHits: 1, resetTime: new Date() }; }
+    async decrement() {}
+    async resetKey() {}
+  },
+}));
+
 import app from '../app';
 
 // Pre-compute a hash so the wrong-password test has a real value to compare against.

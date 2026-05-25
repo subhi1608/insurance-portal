@@ -40,3 +40,15 @@ export const claimSchema = z.object({
   claim_status: z.string().min(1, "Claim status is required"),
   claim_date: z.string().min(1, "Claim date is required"),
 });
+
+export const enqueuedResponseSchema = z.object({
+  jobId: z.string().min(1),
+});
+
+export const jobStatusResponseSchema = z.object({
+  status: z.enum(["waiting", "active", "completed", "failed", "unknown"]),
+  result: z
+    .object({ claimId: z.number() })
+    .optional(),
+  failedReason: z.string().optional(),
+});

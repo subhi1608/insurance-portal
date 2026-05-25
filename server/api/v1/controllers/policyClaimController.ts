@@ -28,8 +28,22 @@ router
   })
   .post(validate(claimSchema), async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = await policyClaimService.createNewClaim(req.body);
-      return res.status(201).json({ data: { id } });
+      const jobId = await policyClaimService.enqueueClaimJob(req.body);
+      return res.status(202).json({ data: { jobId } });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+router
+  .route("/status/:jobId")
+  .get(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const jobStatus = await policyClaimService.getClaimJobStatus(req.params.jobId as string);
+      if (!jobStatus) {
+        return res.status(404).json({ error: { code: "JOB_NOT_FOUND", message: "Job not found" } });
+      }
+      return res.status(200).json({ data: jobStatus });
     } catch (error) {
       return next(error);
     }

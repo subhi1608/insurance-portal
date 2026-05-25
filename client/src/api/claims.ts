@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
-import type { Claim } from '@/types'
+import type { Claim, JobStatus } from '@/types'
 
 interface PagedResponse<T> {
   data: T[]
@@ -21,18 +21,32 @@ export function useClaims(policyId: number) {
 }
 
 export function useCreateClaim() {
-  const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: { policyId: number; description: string; claim_status: string; claim_date: string }) => {
-      const { data } = await api.post<{ data: { id: number } }>('/claims', {
+      const { data } = await api.post<{ data: { jobId: string } }>('/claims', {
         insurance_policy_id: input.policyId,
         description: input.description,
         claim_status: input.claim_status,
         claim_date: input.claim_date,
       })
-      return data.data.id
+      return data.data.jobId
     },
-    onSuccess: (_id, variables) => qc.invalidateQueries({ queryKey: ['claims', variables.policyId] }),
+  })
+}
+
+export function useJobStatus(jobId: string | null) {
+  return useQuery({
+    queryKey: ['job-status', jobId],
+    enabled: !!jobId,
+    queryFn: async () => {
+      const { data } = await api.get<{ data: JobStatus }>(`/claims/status/${jobId}`)
+      return data.data
+    },
+    refetchInterval: (query) => {
+      const status = query.state.data?.status
+      if (status === 'completed' || status === 'failed') return false
+      return 500
+    },
   })
 }
 

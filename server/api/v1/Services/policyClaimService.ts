@@ -1,4 +1,5 @@
 import policyClaim from "../db/policyclaim";
+import { enqueueClaimJob as _enqueueClaimJob, getJobStatus } from "../../../queue/claimQueue";
 import type { ClaimInput } from "../../../types";
 
 const getAllClaims = async (page: number, limit: number, policyId?: number) => {
@@ -25,12 +26,22 @@ const deleteClaim = async (id: number) => {
   return await policyClaim.deleteClaim(id);
 };
 
+const enqueueClaimJob = async (reqBody: ClaimInput): Promise<string> => {
+  return await _enqueueClaimJob(reqBody);
+};
+
+const getClaimJobStatus = async (jobId: string) => {
+  return await getJobStatus(jobId);
+};
+
 const policyClaimService = {
   getAllClaims,
   getSingleClaim,
   createNewClaim,
   updateClaim,
   deleteClaim,
+  enqueueClaimJob,
+  getClaimJobStatus,
 };
 
 export default policyClaimService;

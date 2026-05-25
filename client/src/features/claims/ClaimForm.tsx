@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import axios from 'axios'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter,
 } from '@/components/ui/sheet'
@@ -12,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useCreateClaim, useUpdateClaim } from '@/api/claims'
+import { useCreateClaim, useUpdateClaim, useJobStatus } from '@/api/claims'
 import type { Claim } from '@/types'
 
 const CLAIM_STATUSES = ['Pending', 'Approved', 'Rejected', 'Under Review'] as const
@@ -32,11 +33,18 @@ interface Props {
 }
 
 export default function ClaimForm({ open, onOpenChange, policyId, claim }: Props) {
+  const qc = useQueryClient()
+  const [pendingJobId, setPendingJobId] = useState<string | null>(null)
+  const [jobError, setJobError] = useState<string | null>(null)
+
   const create = useCreateClaim()
   const update = useUpdateClaim()
+  const jobStatus = useJobStatus(pendingJobId)
+
   const isEdit = !!claim
-  const error = isEdit ? update.error : create.error
-  const isPending = isEdit ? update.isPending : create.isPending
+  const isPolling = !!pendingJobId
+  const mutationError = isEdit ? update.error : create.error
+  const isPending = isPolling || (isEdit ? update.isPending : create.isPending)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -52,7 +60,29 @@ export default function ClaimForm({ open, onOpenChange, policyId, claim }: Props
     )
   }, [open, claim, reset])
 
+  // Clear polling state when sheet closes
+  useEffect(() => {
+    if (!open) {
+      setPendingJobId(null)
+      setJobError(null)
+    }
+  }, [open])
+
+  // React to job completion
+  useEffect(() => {
+    if (!jobStatus.data) return
+    if (jobStatus.data.status === 'completed') {
+      qc.invalidateQueries({ queryKey: ['claims', policyId] })
+      setPendingJobId(null)
+      onOpenChange(false)
+    } else if (jobStatus.data.status === 'failed') {
+      setPendingJobId(null)
+      setJobError(jobStatus.data.failedReason ?? 'Claim processing failed. Please try again.')
+    }
+  }, [jobStatus.data, policyId, qc, onOpenChange])
+
   function onSubmit(values: FormValues) {
+    setJobError(null)
     if (isEdit) {
       update.mutate(
         { id: claim.id, policyId, ...values },
@@ -61,10 +91,20 @@ export default function ClaimForm({ open, onOpenChange, policyId, claim }: Props
     } else {
       create.mutate(
         { policyId, ...values },
-        { onSuccess: () => onOpenChange(false) }
+        { onSuccess: (jobId) => setPendingJobId(jobId) }
       )
     }
   }
+
+  const displayError = jobError ?? (
+    mutationError
+      ? axios.isAxiosError(mutationError)
+        ? (mutationError.response?.data as { error?: { message?: string } })?.error?.message ?? 'Something went wrong'
+        : 'Something went wrong'
+      : null
+  )
+
+  const buttonText = isPolling ? 'Processing…' : isPending ? 'Saving…' : 'Save'
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -72,13 +112,9 @@ export default function ClaimForm({ open, onOpenChange, policyId, claim }: Props
         <SheetHeader>
           <SheetTitle>{isEdit ? 'Edit Claim' : 'New Claim'}</SheetTitle>
         </SheetHeader>
-        {error && (
+        {displayError && (
           <Alert variant="destructive" className="mx-4">
-            <AlertDescription>
-              {axios.isAxiosError(error)
-                ? (error.response?.data as { error?: { message?: string } })?.error?.message ?? 'Something went wrong'
-                : 'Something went wrong'}
-            </AlertDescription>
+            <AlertDescription>{displayError}</AlertDescription>
           </Alert>
         )}
         <Form {...form}>
@@ -117,7 +153,7 @@ export default function ClaimForm({ open, onOpenChange, policyId, claim }: Props
             )} />
             <SheetFooter>
               <Button type="submit" disabled={isPending} className="w-full">
-                {isPending ? 'Saving…' : 'Save'}
+                {buttonText}
               </Button>
             </SheetFooter>
           </form>

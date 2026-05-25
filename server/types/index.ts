@@ -36,6 +36,11 @@ export type ClientInput = Omit<Client, "id">;
 export type PolicyInput = Omit<Policy, "id">;
 export type ClaimInput = Omit<Claim, "id">;
 
+export type ClaimJobData = ClaimInput;
+export interface ClaimJobResult {
+  claimId: number;
+}
+
 export interface PaginationResult<T> {
   rows: T[];
   total: number;
