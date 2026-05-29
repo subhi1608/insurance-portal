@@ -134,7 +134,7 @@ export default function ClaimForm({ open, onOpenChange, policyId, claim }: Props
                 <FormControl>
                   <select
                     {...field}
-                    className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                    className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm text-foreground transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
                   >
                     {CLAIM_STATUSES.map((s) => (
                       <option key={s} value={s}>{s}</option>

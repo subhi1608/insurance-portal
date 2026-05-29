@@ -129,6 +129,9 @@ export default function PolicyForm({ open, onOpenChange, clientId, policy }: Pro
               )} />
             </div>
             <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+                Cancel
+              </Button>
               <Button type="submit" disabled={isPending}>
                 {isPending ? 'Saving…' : 'Save'}
               </Button>

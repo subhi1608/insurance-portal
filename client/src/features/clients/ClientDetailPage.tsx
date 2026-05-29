@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { useClient, useUpdateClient, useDeleteClient } from '@/api/clients'
 import PolicyList from '@/features/policies/PolicyList'
 import ClientForm from './ClientForm'
@@ -40,9 +41,9 @@ export default function ClientDetailPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="sm" onClick={() => navigate('/clients')}>
-          ← Back
+          <ArrowLeft /> Back
         </Button>
-        <h1 className="text-2xl font-semibold flex-1">{client.name}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight flex-1">{client.name}</h1>
         <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>Edit</Button>
         <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>Delete</Button>
       </div>

@@ -42,7 +42,7 @@ export default function PolicyList({ clientId }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Policies</h2>
+        <h2 className="text-xl font-semibold tracking-tight">Policies</h2>
         <Button size="sm" onClick={openCreate}>Add Policy</Button>
       </div>
 

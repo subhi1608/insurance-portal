@@ -103,6 +103,9 @@ export default function ClientForm({ open, onOpenChange, client }: Props) {
               </FormItem>
             )} />
             <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={mutation.isPending}>
+                Cancel
+              </Button>
               <Button type="submit" disabled={mutation.isPending}>
                 {mutation.isPending ? 'Saving…' : 'Save'}
               </Button>
