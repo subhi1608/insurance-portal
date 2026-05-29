@@ -12,6 +12,9 @@ const claimQueue = new Queue<ClaimJobData>("claims", {
   },
 });
 
+// Suppress connection errors when Redis is unavailable (dev without Redis).
+claimQueue.on("error", () => {});
+
 export const enqueueClaimJob = async (data: ClaimJobData): Promise<string> => {
   const job = await claimQueue.add("process-claim", data);
   return job.id as string;

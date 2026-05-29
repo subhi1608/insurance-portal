@@ -4,6 +4,8 @@ export interface User {
   password: string;
   login_status: boolean;
   created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
 }
 
 export interface Client {
@@ -12,6 +14,9 @@ export interface Client {
   date_of_birth: string;
   address: string;
   contact: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
 }
 
 export interface Policy {
@@ -22,6 +27,9 @@ export interface Policy {
   premium: number;
   start_date: string;
   end_date: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
 }
 
 export interface Claim {
@@ -30,11 +38,14 @@ export interface Claim {
   description: string;
   claim_status: string;
   claim_date: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
 }
 
-export type ClientInput = Omit<Client, "id">;
-export type PolicyInput = Omit<Policy, "id">;
-export type ClaimInput = Omit<Claim, "id">;
+export type ClientInput = Omit<Client, "id" | "created_at" | "updated_at" | "deleted_at">;
+export type PolicyInput = Omit<Policy, "id" | "created_at" | "updated_at" | "deleted_at">;
+export type ClaimInput = Omit<Claim, "id" | "created_at" | "updated_at" | "deleted_at">;
 
 export type ClaimJobData = ClaimInput;
 export interface ClaimJobResult {

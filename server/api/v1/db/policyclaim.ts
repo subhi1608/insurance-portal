@@ -1,25 +1,33 @@
 import db from "./index";
 import type { ClaimInput, PaginationResult } from "../../../types";
 
-const getAllClaims = async (page: number, limit: number, policyId?: number): Promise<PaginationResult<any>> => {
+const getAllClaims = async (
+  page: number,
+  limit: number,
+  policyId?: number
+): Promise<PaginationResult<any>> => {
   const offset = (page - 1) * limit;
   if (policyId !== undefined) {
     const [countResult, dataResult] = await Promise.all([
-      db.query("SELECT COUNT(*) FROM insurance_claim WHERE insurance_policy_id = $1", [policyId]),
       db.query(
-        "SELECT * FROM insurance_claim WHERE insurance_policy_id = $1 ORDER BY id LIMIT $2 OFFSET $3",
+        "SELECT COUNT(*) FROM insurance_claim WHERE insurance_policy_id = $1 AND deleted_at IS NULL",
+        [policyId]
+      ),
+      db.query(
+        "SELECT * FROM insurance_claim WHERE insurance_policy_id = $1 AND deleted_at IS NULL ORDER BY id LIMIT $2 OFFSET $3",
         [policyId, limit, offset]
       ),
     ]);
     return { rows: dataResult.rows, total: Number(countResult.rows[0].count) };
   }
   const [countResult, dataResult] = await Promise.all([
-    db.query("SELECT COUNT(*) FROM insurance_claim"),
+    db.query("SELECT COUNT(*) FROM insurance_claim ic JOIN insurance_policy ip ON ic.insurance_policy_id = ip.id JOIN client c ON ip.client_id = c.id WHERE ic.deleted_at IS NULL AND ip.deleted_at IS NULL AND c.deleted_at IS NULL"),
     db.query(
       `SELECT ic.*, c.*, ip.*
        FROM insurance_claim ic
        JOIN insurance_policy ip ON ic.insurance_policy_id = ip.id
        JOIN client c ON ip.client_id = c.id
+       WHERE ic.deleted_at IS NULL AND ip.deleted_at IS NULL AND c.deleted_at IS NULL
        ORDER BY ic.id LIMIT $1 OFFSET $2`,
       [limit, offset]
     ),
@@ -33,7 +41,8 @@ const getSingleClaim = async (id: number): Promise<any[]> => {
      FROM insurance_claim ic
      JOIN insurance_policy ip ON ic.insurance_policy_id = ip.id
      JOIN client c ON ip.client_id = c.id
-     WHERE ic.id = $1`,
+     WHERE ic.id = $1 AND ic.deleted_at IS NULL
+  AND ip.deleted_at IS NULL AND c.deleted_at IS NULL`,
     [id]
   );
   return data.rows;
@@ -57,7 +66,7 @@ const updateClaim = async (id: number, reqBody: ClaimInput): Promise<void> => {
 };
 
 const deleteClaim = async (id: number): Promise<void> => {
-  await db.query("DELETE FROM insurance_claim WHERE id=$1", [id]);
+  await db.query("UPDATE insurance_claim SET deleted_at = NOW() WHERE id=$1", [id]);
 };
 
 export default { getAllClaims, getSingleClaim, createNewClaim, updateClaim, deleteClaim };

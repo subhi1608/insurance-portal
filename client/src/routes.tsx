@@ -4,6 +4,7 @@ import { refresh } from '@/api/auth'
 import { useAuthStore } from '@/lib/store'
 import Layout from '@/components/Layout'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import ErrorBoundary from '@/components/ErrorBoundary'
 import LoginPage from '@/features/auth/LoginPage'
 const ClientsPage = lazy(() => import('@/features/clients/ClientsPage'))
 const ClientDetailPage = lazy(() => import('@/features/clients/ClientDetailPage'))
@@ -37,11 +38,19 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to="/clients" replace /> },
       {
         path: '/clients',
-        element: <Suspense fallback={<LoadingSpinner />}><ClientsPage /></Suspense>,
+        element: (
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}><ClientsPage /></Suspense>
+          </ErrorBoundary>
+        ),
       },
       {
         path: '/clients/:id',
-        element: <Suspense fallback={<LoadingSpinner />}><ClientDetailPage /></Suspense>,
+        element: (
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}><ClientDetailPage /></Suspense>
+          </ErrorBoundary>
+        ),
       },
     ],
   },

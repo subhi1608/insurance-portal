@@ -5,6 +5,7 @@ import ConfirmDialog from '@/components/ConfirmDialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useAuthStore } from '@/lib/store'
 import type { Claim } from '@/types'
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -25,6 +26,8 @@ export default function ClaimList({ policyId }: Props) {
   const [formOpen, setFormOpen] = useState(false)
   const [editClaim, setEditClaim] = useState<Claim | undefined>()
   const [deleteTarget, setDeleteTarget] = useState<Claim | null>(null)
+  const [summaries, setSummaries] = useState<Record<number, string>>({})
+  const [streamingId, setStreamingId] = useState<number | null>(null)
 
   function openCreate() {
     setEditClaim(undefined)
@@ -34,6 +37,45 @@ export default function ClaimList({ policyId }: Props) {
   function openEdit(claim: Claim) {
     setEditClaim(claim)
     setFormOpen(true)
+  }
+
+  async function summarize(claimId: number) {
+    setStreamingId(claimId)
+    setSummaries((prev) => ({ ...prev, [claimId]: '' }))
+
+    const token = useAuthStore.getState().accessToken
+    try {
+      const res = await fetch(`/api/v1/claims/${claimId}/summarize`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok || !res.body) {
+        setSummaries((prev) => ({ ...prev, [claimId]: 'Summary unavailable.' }))
+        return
+      }
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        const chunk = decoder.decode(value, { stream: true })
+        for (const line of chunk.split('\n')) {
+          if (!line.startsWith('data: ')) continue
+          const content = line.slice(6)
+          if (content === '[DONE]') return
+          if (content === '[ERROR]') {
+            setSummaries((prev) => ({ ...prev, [claimId]: 'Summary unavailable.' }))
+            return
+          }
+          setSummaries((prev) => ({ ...prev, [claimId]: (prev[claimId] ?? '') + content }))
+        }
+      }
+    } catch {
+      setSummaries((prev) => ({ ...prev, [claimId]: 'Summary unavailable.' }))
+    } finally {
+      setStreamingId(null)
+    }
   }
 
   if (error) return (
@@ -56,18 +98,33 @@ export default function ClaimList({ policyId }: Props) {
       )}
 
       {claims?.map((claim) => (
-        <div key={claim.id} className="flex items-start justify-between rounded-md border px-3 py-2 text-sm">
-          <div className="space-y-0.5 flex-1 min-w-0">
-            <p className="truncate">{claim.description}</p>
-            <p className="text-xs text-muted-foreground">{claim.claim_date}</p>
+        <div key={claim.id} className="rounded-md border px-3 py-2 text-sm space-y-1">
+          <div className="flex items-start justify-between">
+            <div className="space-y-0.5 flex-1 min-w-0">
+              <p className="truncate">{claim.description}</p>
+              <p className="text-xs text-muted-foreground">{claim.claim_date}</p>
+            </div>
+            <div className="flex items-center gap-2 ml-2 shrink-0">
+              <Badge variant={STATUS_VARIANT[claim.claim_status] ?? 'outline'}>
+                {claim.claim_status}
+              </Badge>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={streamingId !== null}
+                onClick={() => summarize(claim.id)}
+              >
+                {streamingId === claim.id ? 'Summarizing…' : 'Summarize'}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => openEdit(claim)}>Edit</Button>
+              <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(claim)}>Delete</Button>
+            </div>
           </div>
-          <div className="flex items-center gap-2 ml-2 shrink-0">
-            <Badge variant={STATUS_VARIANT[claim.claim_status] ?? 'outline'}>
-              {claim.claim_status}
-            </Badge>
-            <Button size="sm" variant="ghost" onClick={() => openEdit(claim)}>Edit</Button>
-            <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(claim)}>Delete</Button>
-          </div>
+          {summaries[claim.id] !== undefined && (
+            <p className="text-xs text-muted-foreground italic pt-1 border-t">
+              {summaries[claim.id] || '…'}
+            </p>
+          )}
         </div>
       ))}
 

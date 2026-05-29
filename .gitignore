@@ -7,3 +7,7 @@ client/dist
 .claude/settings.local.json
 skills
 docs/superpowers
+# Playwright
+/e2e/.auth/
+/playwright-report/
+/test-results/

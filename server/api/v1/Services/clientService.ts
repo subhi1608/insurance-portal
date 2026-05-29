@@ -1,10 +1,18 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import client from "../db/client";
+import * as cache from "../cache/redisCache";
 import type { ClientInput, TokenPair } from "../../../types";
 
-const getClients = async (page: number, limit: number) => {
-  return await client.getAllClients(page, limit);
+const getAllClients = async (page: number, limit: number) => {
+  const key = `clients:page:${page}:limit:${limit}`;
+  const cached = await cache.get(key);
+  if (cached) {
+    return JSON.parse(cached);
+  }
+  const result = await client.getAllClients(page, limit);
+  await cache.set(key, JSON.stringify(result), 60);
+  return result;
 };
 
 const getClientById = async (clientId: number) => {
@@ -17,7 +25,9 @@ const getClientById = async (clientId: number) => {
 
 const createClient = async (data: ClientInput) => {
   try {
-    return await client.createClient(data);
+    const result = await client.createClient(data);
+    await cache.invalidate("clients:*");
+    return result;
   } catch (error) {
     return error;
   }
@@ -25,7 +35,9 @@ const createClient = async (data: ClientInput) => {
 
 const updateClient = async (id: number, data: ClientInput) => {
   try {
-    return await client.updateClient(id, data);
+    const result = await client.updateClient(id, data);
+    await cache.invalidate("clients:*");
+    return result;
   } catch (error) {
     return error;
   }
@@ -33,7 +45,9 @@ const updateClient = async (id: number, data: ClientInput) => {
 
 const deleteClient = async (id: number) => {
   try {
-    return await client.deleteClient(id);
+    const result = await client.deleteClient(id);
+    await cache.invalidate("clients:*");
+    return result;
   } catch (error) {
     return error;
   }
@@ -108,7 +122,7 @@ const logoutUser = async (id: number) => {
 };
 
 const clientService = {
-  getClients,
+  getAllClients,
   getClientById,
   createClient,
   updateClient,

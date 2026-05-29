@@ -12,6 +12,7 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
+		"@anthropic-ai/sdk": "^0.98.0",
 		"bcrypt": "^6.0.0",
 		"bullmq": "^5.77.1",
 		"cookie-parser": "~1.4.4",

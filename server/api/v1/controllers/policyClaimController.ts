@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import policyClaimService from "../Services/policyClaimService";
 import { validate, isClaimRecordExist } from "../middlewares/validations";
 import { claimSchema } from "../schemas";
+import { streamClaimSummary } from "../Services/summarizeService";
 
 const router = express.Router();
 
@@ -46,6 +47,33 @@ router
       return res.status(200).json({ data: jobStatus });
     } catch (error) {
       return next(error);
+    }
+  });
+
+router
+  .route("/:id/summarize")
+  .get(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const claimId = Number(req.params.id);
+      const rows = await policyClaimService.getSingleClaim(claimId);
+      if (!Array.isArray(rows) || !rows.length) {
+        return res
+          .status(404)
+          .json({ error: { code: "CLAIM_NOT_FOUND", message: "Claim not found" } });
+      }
+      const claim = rows[0];
+      await streamClaimSummary(
+        {
+          description: claim.description,
+          claim_status: claim.claim_status,
+          claim_date: claim.claim_date,
+          type: claim.type,
+          coverage_amount: claim.coverage_amount,
+        },
+        res
+      );
+    } catch (error) {
+      next(error);
     }
   });
 

@@ -11,7 +11,7 @@ router
     try {
       const page = Math.max(1, Number(req.query.page) || 1);
       const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
-      const { rows, total } = await clientService.getClients(page, limit);
+      const { rows, total } = await clientService.getAllClients(page, limit);
       return res.status(200).json({ data: rows, meta: { page, limit, total } });
     } catch (error) {
       return next(error);

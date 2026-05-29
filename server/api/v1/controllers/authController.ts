@@ -8,15 +8,18 @@ import utils from "../utils";
 import { validate } from "../middlewares/validations";
 import { authSigninSchema, authLoginSchema } from "../schemas";
 
+
+const rateLimitStore = process.env.REDIS_URL
+  ? new RedisStore({ sendCommand: (...args: string[]) => (connection as any).call(...args) })
+  : undefined;
+
 const authRateLimit = rateLimit({
   windowMs: 60 * 1000,
   limit: 10,
   standardHeaders: "draft-7",
   legacyHeaders: false,
   message: { error: { code: "TOO_MANY_REQUESTS", message: "Too many requests, please try again later" } },
-  store: new RedisStore({
-    sendCommand: (...args: string[]) => (connection as any).call(...args),
-  }),
+  ...(rateLimitStore ? { store: rateLimitStore } : {}),
 });
 
 const router = express.Router();
